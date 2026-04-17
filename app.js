@@ -139,9 +139,28 @@ function populateDescDropdown() {
 document.getElementById('type-select').addEventListener('change', populateDescDropdown);
 
 // ===== Dashboard calculations =====
+// ===== Fixed monthly budget =====
+const MONTHLY_BUDGET = 2500; // Change this number to update your budget
+
+// ===== Dashboard calculations =====
 function updateDashboard() {
   const period = document.getElementById('period-select').value;
   const periodEntries = entries.filter(e => e.period === period);
+  
+  // Sum of all outgoing entries for this period
+  const spent = periodEntries
+    .filter(e => e.direction === 'välja')
+    .reduce((sum, e) => sum + e.actual, 0);
+  
+  document.getElementById('stat-spent').textContent = fmtEur(spent);
+  document.getElementById('stat-budget').textContent = fmtEur(MONTHLY_BUDGET);
+  
+  // Preview: budget − spent − current form amount (if välja)
+  const amount = parseFloat(document.getElementById('amount-input').value) || 0;
+  const delta = currentDirection === 'sisse' ? 0 : -amount; // income doesn't reduce remaining budget
+  const remaining = MONTHLY_BUDGET - spent + delta;
+  document.getElementById('stat-preview').textContent = fmtEur(remaining);
+}
   
   // Income entries (sisse) add to budget; outgoing (välja) reduce balance
   const income = periodEntries
@@ -305,14 +324,16 @@ function renderSummary() {
   const filtered = entries.filter(e => rangePeriods.includes(e.period));
   
   // Budget usage
-  const income = filtered.filter(e => e.direction === 'sisse').reduce((s, e) => s + e.actual, 0);
-  const spent = filtered.filter(e => e.direction === 'välja').reduce((s, e) => s + e.actual, 0);
-  const usage = income > 0 ? Math.round((spent / income) * 100) : 0;
+  // Budget usage (fixed budget × number of months in range)
+const spent = filtered.filter(e => e.direction === 'välja').reduce((s, e) => s + e.actual, 0);
+const totalBudget = MONTHLY_BUDGET * rangePeriods.length;
+const usage = totalBudget > 0 ? Math.round((spent / totalBudget) * 100) : 0;
+const income = totalBudget; // so existing template below keeps working
   
   document.getElementById('budget-usage').innerHTML = `
     <div class="cat-row">
       <div class="cat-header">
-        <span>Sissetulek</span>
+        <span>Eelarve</span>
         <span>${fmtEur(income)}</span>
       </div>
     </div>
