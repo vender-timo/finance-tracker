@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="et">
+<head>
+  <meta charset="UTF-8" />
+  <!-- iOS-specific meta tags for native-like behavior -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="Rahakott" />
+  <meta name="theme-color" content="#F2F2F7" />
+  <title>Rahakott</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <!-- Main app container -->
+  <div id="app">
+    
+    <!-- ===== MAIN TAB: Sisestamine ja Seis ===== -->
+    <section id="tab-main" class="tab active">
+      <header class="app-header">
+        <h1>Rahakott</h1>
+        <!-- Period selector dropdown -->
+        <select id="period-select" class="period-select"></select>
+      </header>
+      
+      <!-- Dashboard: live budget calculations -->
+      <div class="dashboard">
+        <div class="stat-card">
+          <span class="stat-label">Kulutatud</span>
+          <span class="stat-value" id="stat-spent">0€</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-label">Eelarve</span>
+          <span class="stat-value" id="stat-budget">0€</span>
+        </div>
+        <div class="stat-card highlight">
+          <span class="stat-label">Jääk pärast kannet</span>
+          <span class="stat-value" id="stat-preview">0€</span>
+        </div>
+      </div>
+      
+      <!-- New Entry Form -->
+      <div class="card">
+        <h2>Uus kanne</h2>
+        <form id="entry-form">
+          <!-- Direction segmented control -->
+          <label class="field-label">Suund</label>
+          <div class="segmented" id="direction-segmented">
+            <button type="button" class="seg-btn active" data-value="välja">Välja</button>
+            <button type="button" class="seg-btn" data-value="sisse">Sisse</button>
+          </div>
+          
+          <label class="field-label">Tüüp</label>
+          <select id="type-select" required></select>
+          
+          <label class="field-label">Kirjeldus</label>
+          <select id="desc-select" required></select>
+          
+          <label class="field-label">Summa (€)</label>
+          <input type="number" id="amount-input" step="0.01" inputmode="decimal" placeholder="0.00" required />
+          
+          <button type="submit" class="btn-primary" id="submit-btn">Lisa kanne</button>
+        </form>
+      </div>
+      
+      <!-- Recent Entries -->
+      <div class="card">
+        <h2>Viimased kanded</h2>
+        <div id="recent-list" class="entry-list"></div>
+      </div>
+    </section>
+    
+    <!-- ===== SUMMARY TAB: Kokkuvõte ===== -->
+    <section id="tab-summary" class="tab">
+      <header class="app-header">
+        <h1>Kokkuvõte</h1>
+      </header>
+      
+      <!-- Period range selector -->
+      <div class="card">
+        <label class="field-label">Alates</label>
+        <select id="sum-period-from"></select>
+        <label class="field-label">Kuni</label>
+        <select id="sum-period-to"></select>
+      </div>
+      
+      <!-- Budget usage summary -->
+      <div class="card">
+        <h2>Eelarve kasutus</h2>
+        <div id="budget-usage"></div>
+      </div>
+      
+      <!-- Categories overview -->
+      <div class="card">
+        <h2>Kategooriad</h2>
+        <div id="category-overview"></div>
+      </div>
+    </section>
+    
+    <!-- ===== Bottom Tab Bar (iOS style) ===== -->
+    <nav class="tab-bar">
+      <button class="tab-btn active" data-tab="tab-main">
+        <span class="tab-icon">💰</span>
+        <span class="tab-text">Sisestamine</span>
+      </button>
+      <button class="tab-btn" data-tab="tab-summary">
+        <span class="tab-icon">📊</span>
+        <span class="tab-text">Kokkuvõte</span>
+      </button>
+    </nav>
+  </div>
+  
+  <!-- Toast notification -->
+  <div id="toast" class="toast"></div>
+  
+  <script src="app.js"></script>
+</body>
+</html>
