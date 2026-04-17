@@ -5,11 +5,12 @@
  * - POSTs new entries, GETs existing data from Apps Script Web App
  */
 
-// ⚠️ REPLACE WITH YOUR DEPLOYED WEB APP URL (see setup instructions)
 const API_URL = 'https://script.google.com/macros/s/AKfycbwdpYkUbxPfBY5kf560T7Jr20O_fGUJW9P_qPJ6iU6QaXwemY-3VDNBoQ20DwR8oVwh5A/exec';
 
+// ===== Fixed monthly budget =====
+const MONTHLY_BUDGET = 2500; // Change this number to update your budget
+
 // ===== Category Configuration =====
-// Edit here to add/remove categories
 const CATEGORIES = {
   'sisse': {
     'sisse': ['Palk', 'Säästud', 'Muu']
@@ -31,7 +32,6 @@ function formatPeriod(date) {
   return `${m}/${date.getFullYear()}`;
 }
 
-// Generate period options: last month, current, next 6 months
 function generatePeriods() {
   const periods = [];
   const now = new Date();
@@ -42,7 +42,6 @@ function generatePeriods() {
   return periods;
 }
 
-// Format number as euro
 function fmtEur(n) {
   return `${Number(n).toFixed(2)}€`;
 }
@@ -111,7 +110,6 @@ function populateTypeDropdown() {
     typeSelect.appendChild(opt);
   });
   
-  // For "sisse": type is forced to "sisse"
   if (currentDirection === 'sisse') {
     typeSelect.value = 'sisse';
     typeSelect.disabled = true;
@@ -139,15 +137,10 @@ function populateDescDropdown() {
 document.getElementById('type-select').addEventListener('change', populateDescDropdown);
 
 // ===== Dashboard calculations =====
-// ===== Fixed monthly budget =====
-const MONTHLY_BUDGET = 2500; // Change this number to update your budget
-
-// ===== Dashboard calculations =====
 function updateDashboard() {
   const period = document.getElementById('period-select').value;
   const periodEntries = entries.filter(e => e.period === period);
   
-  // Sum of all outgoing entries for this period
   const spent = periodEntries
     .filter(e => e.direction === 'välja')
     .reduce((sum, e) => sum + e.actual, 0);
@@ -157,27 +150,9 @@ function updateDashboard() {
   
   // Preview: budget − spent − current form amount (if välja)
   const amount = parseFloat(document.getElementById('amount-input').value) || 0;
-  const delta = currentDirection === 'sisse' ? 0 : -amount; // income doesn't reduce remaining budget
+  const delta = currentDirection === 'sisse' ? 0 : -amount;
   const remaining = MONTHLY_BUDGET - spent + delta;
   document.getElementById('stat-preview').textContent = fmtEur(remaining);
-}
-  
-  // Income entries (sisse) add to budget; outgoing (välja) reduce balance
-  const income = periodEntries
-    .filter(e => e.direction === 'sisse')
-    .reduce((sum, e) => sum + e.actual, 0);
-  const spent = periodEntries
-    .filter(e => e.direction === 'välja')
-    .reduce((sum, e) => sum + e.actual, 0);
-  
-  document.getElementById('stat-spent').textContent = fmtEur(spent);
-  document.getElementById('stat-budget').textContent = fmtEur(income);
-  
-  // Preview: what will balance be after current form amount?
-  const amount = parseFloat(document.getElementById('amount-input').value) || 0;
-  const delta = currentDirection === 'sisse' ? amount : -amount;
-  const newBalance = (income - spent) + delta;
-  document.getElementById('stat-preview').textContent = fmtEur(newBalance);
 }
 
 document.getElementById('amount-input').addEventListener('input', updateDashboard);
@@ -209,7 +184,6 @@ function renderRecent() {
     </div>
   `).join('');
   
-  // Tap to prefill form
   list.querySelectorAll('.entry-item').forEach(el => {
     el.addEventListener('click', () => {
       const entry = entries[parseInt(el.dataset.index)];
@@ -220,21 +194,16 @@ function renderRecent() {
 
 // ===== Prefill form from past entry =====
 function prefillForm(entry) {
-  // Set direction
   currentDirection = entry.direction;
   document.querySelectorAll('#direction-segmented .seg-btn').forEach(b => {
     b.classList.toggle('active', b.dataset.value === entry.direction);
   });
   populateTypeDropdown();
-  // Set type
   document.getElementById('type-select').value = entry.type;
   populateDescDropdown();
-  // Set description
   document.getElementById('desc-select').value = entry.description;
-  // Clear amount & focus
   document.getElementById('amount-input').value = '';
   document.getElementById('amount-input').focus();
-  // Scroll to form
   document.getElementById('entry-form').scrollIntoView({ behavior: 'smooth', block: 'center' });
   toast('Vorm täidetud');
 }
@@ -262,22 +231,19 @@ document.getElementById('entry-form').addEventListener('submit', async (e) => {
   submitBtn.textContent = 'Salvestan...';
   
   try {
-    // Apps Script Web App requires text/plain to avoid CORS preflight
     await fetch(API_URL, {
       method: 'POST',
-      mode: 'no-cors', // Apps Script doesn't set CORS headers
+      mode: 'no-cors',
       headers: { 'Content-Type': 'text/plain;charset=utf-8' },
       body: JSON.stringify(payload)
     });
     
-    // Optimistically add to local state (no-cors hides response)
     entries.push(payload);
     document.getElementById('amount-input').value = '';
     updateDashboard();
     renderRecent();
     toast('✓ Salvestatud');
     
-    // Refresh from server after short delay
     setTimeout(loadEntries, 1500);
   } catch (err) {
     toast('Viga salvestamisel');
@@ -323,12 +289,11 @@ function renderSummary() {
   
   const filtered = entries.filter(e => rangePeriods.includes(e.period));
   
-  // Budget usage
   // Budget usage (fixed budget × number of months in range)
-const spent = filtered.filter(e => e.direction === 'välja').reduce((s, e) => s + e.actual, 0);
-const totalBudget = MONTHLY_BUDGET * rangePeriods.length;
-const usage = totalBudget > 0 ? Math.round((spent / totalBudget) * 100) : 0;
-const income = totalBudget; // so existing template below keeps working
+  const spent = filtered.filter(e => e.direction === 'välja').reduce((s, e) => s + e.actual, 0);
+  const totalBudget = MONTHLY_BUDGET * rangePeriods.length;
+  const usage = totalBudget > 0 ? Math.round((spent / totalBudget) * 100) : 0;
+  const income = totalBudget;
   
   document.getElementById('budget-usage').innerHTML = `
     <div class="cat-row">
@@ -355,7 +320,6 @@ const income = totalBudget; // so existing template below keeps working
     </div>
   `;
   
-  // Categories breakdown (by type)
   const byType = {};
   filtered.filter(e => e.direction === 'välja').forEach(e => {
     byType[e.type] = (byType[e.type] || 0) + e.actual;
