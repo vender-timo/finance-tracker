@@ -234,8 +234,8 @@ document.getElementById('entry-form').addEventListener('submit', async (e) => {
     await fetch(API_URL, {
       method: 'POST',
       mode: 'no-cors',
-      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-      body: JSON.stringify(payload)
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: 'data=' + encodeURIComponent(JSON.stringify(payload))
     });
     
     entries.push(payload);
@@ -244,7 +244,7 @@ document.getElementById('entry-form').addEventListener('submit', async (e) => {
     renderRecent();
     toast('✓ Salvestatud');
     
-    setTimeout(loadEntries, 1500);
+    setTimeout(loadEntries, 2500);
   } catch (err) {
     toast('Viga salvestamisel');
     console.error(err);
