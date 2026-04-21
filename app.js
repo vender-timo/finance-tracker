@@ -5,7 +5,7 @@
  * - POSTs new entries, GETs existing data from Apps Script Web App
  */
 
-const API_URL = 'https://script.google.com/macros/s/AKfycbwdpYkUbxPfBY5kf560T7Jr20O_fGUJW9P_qPJ6iU6QaXwemY-3VDNBoQ20DwR8oVwh5A/exec';
+const API_URL = 'https://script.google.com/macros/s/AKfycbyjjiXaAnpuFaHT1JY6Vn-KyzABkclQNjzmPAm50vH8COW2aLcQk5iqcIazswdOifPsnA/exec';
 
 // ===== Fixed monthly budget =====
 const MONTHLY_BUDGET = 2500; // Change this number to update your budget
